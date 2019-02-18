@@ -1,0 +1,7 @@
+<resources>
+
+    <style name="Theme_Dialog" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+        <item name="android:windowMinWidthMajor">98%</item>
+        <item name="android:windowMinWidthMinor">98%</item>
+    </style>
+</resources>
