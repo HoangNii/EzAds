@@ -1,9 +1,7 @@
 package com.ezlife.admin.cheoapp;
 
-import android.content.DialogInterface;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.webkit.WebChromeClient;
 
 import cheoapp.admin.ezlife.com.ezad.EzAdDialog;
 
@@ -21,13 +19,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
-        EzAdDialog ezAdDialog = new EzAdDialog(this) {
+        new EzAdDialog(this) {
             @Override
             public void onCancel() {
                 finish();
             }
-        };
-        ezAdDialog.showDialog();
+        }.showDialog();
 
     }
 }

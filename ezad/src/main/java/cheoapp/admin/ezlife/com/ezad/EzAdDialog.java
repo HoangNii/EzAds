@@ -3,6 +3,7 @@ package cheoapp.admin.ezlife.com.ezad;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -14,7 +15,6 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -30,6 +30,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -53,33 +54,40 @@ public abstract class EzAdDialog {
         this.context = context;
     }
 
-    public abstract void onCancel();
+    public abstract void onAction(Action action,String apId);
+
+    public enum Action{
+        CANCEL,CANCEL_CLICK,CANCEL_NO_APP,INSTALL_CLICK,SHOW
+    }
 
 
     public void showDialog(){
         dialog = new Dialog(context,R.style.Theme_Dialog);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_ezad);
+        dialog.setCancelable(false);
         if(dialog.getWindow()!=null)
-        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
 
         SharedPreferences preferences =  PreferenceManager.getDefaultSharedPreferences(context);
         String json = preferences.getString(KEY_JSON_EZ_AD,"");
         if(json.length()<1){
-            onCancel();
+            onAction(Action.CANCEL_NO_APP,appEz!=null?appEz.getAppId():"no app");
         }else {
             appEz = getAppShow(json);
             if(appEz==null){
-                onCancel();
+                onAction(Action.CANCEL_NO_APP,"no app");
             }else {
                 setupValue();
                 dialog.show();
+                onAction(Action.SHOW,appEz.getAppId());
             }
 
         }
 
 
     }
+
 
     private void setupValue() {
         TextView tvRate = dialog.findViewById(R.id.tvRate);
@@ -101,14 +109,21 @@ public abstract class EzAdDialog {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onCancel();
+                onAction(Action.CANCEL_CLICK,appEz!=null?appEz.getAppId():"no app");
             }
         });
         btnInstall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onCancel();
+                onAction(Action.INSTALL_CLICK,appEz.getAppId());
                 goToStore(appEz.getAppId());
+            }
+        });
+
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialogInterface) {
+                onAction(Action.CANCEL,appEz.getAppId());
             }
         });
 
@@ -192,7 +207,7 @@ public abstract class EzAdDialog {
                 Glide.with(context)
                         .load(appEz.getAppScreen()[position])
                         .apply(new RequestOptions()
-                        .placeholder(R.drawable.bg_load))
+                                .placeholder(R.drawable.bg_load))
                         .into((ImageView) holder.itemView);
 
                 if(position==appEz.getAppScreen().length-1){
@@ -210,7 +225,7 @@ public abstract class EzAdDialog {
         });
 
 
-  }
+    }
 
     private AppEz getAppShow(String json){
         ArrayList<AppEz> appEzs = new ArrayList<>();
@@ -251,7 +266,7 @@ public abstract class EzAdDialog {
                 if(context.getPackageName().equals(appEz.getAppId())){
                     tagThisApp = Arrays.asList(appEz.getAppTag());
                 } else if(!isAppInstalled(appEz.getAppId())){
-                        appEzs.add(appEz);
+                    appEzs.add(appEz);
                 }
 
             }
@@ -259,19 +274,24 @@ public abstract class EzAdDialog {
 
         } catch (JSONException e) {
             e.printStackTrace();
-            onCancel();
+            onAction(Action.CANCEL_NO_APP,appEz!=null?appEz.getAppId():"no app");
         }
 
         //remove tag equals
         if(tagThisApp!=null){
-            for (AppEz appEz:appEzs){
+            Iterator<AppEz> iter = appEzs.iterator();
+
+            while (iter.hasNext()) {
+                AppEz appEz = iter.next();
                 String[] tag = appEz.getAppTag();
                 for (String t:tag){
                     if(tagThisApp.contains(t)){
-                        appEzs.remove(appEz);
+                        iter.remove();
+                        break;
                     }
                 }
             }
+
         }
 
         if(appEzs.size()==0){
