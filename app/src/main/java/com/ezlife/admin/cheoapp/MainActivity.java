@@ -1,11 +1,11 @@
 package com.ezlife.admin.cheoapp;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 import android.os.Bundle;
 
 import cheoapp.admin.ezlife.com.ezad.EzAdDialog;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,9 +21,10 @@ public class MainActivity extends AppCompatActivity {
 
         new EzAdDialog(this) {
             @Override
-            public void onCancel() {
+            public void onAction(Action action, String apId) {
                 finish();
             }
+
         }.showDialog();
 
     }
