@@ -69,6 +69,7 @@ public abstract class EzAdDialog {
         if(dialog.getWindow()!=null)
             dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
 
+
         SharedPreferences preferences =  PreferenceManager.getDefaultSharedPreferences(context);
         String json = preferences.getString(KEY_JSON_EZ_AD,"");
         if(json.length()<1){
@@ -177,7 +178,7 @@ public abstract class EzAdDialog {
                 view.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        goToStore(appEz.getAppId());
+                        btnInstall.performClick();
                     }
                 });
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
