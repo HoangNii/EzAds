@@ -22,7 +22,7 @@ public class MainActivity extends Activity {
         new EzAdDialog(this) {
             @Override
             public void onAction(Action action, String apId) {
-                finish();
+                if(action!=Action.SHOW)finish();
             }
 
         }.showDialog();
