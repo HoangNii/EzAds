@@ -6,9 +6,27 @@ public class AppEz {
     private String appIcon;
     private String appName;
     private String appDesc;
+    private String AppReview;
+    private String appRate;
     private String appDir;
     private String[] appScreen;
     private int appRank;
+
+    public String getAppReview() {
+        return AppReview;
+    }
+
+    public void setAppReview(String appReview) {
+        AppReview = appReview;
+    }
+
+    public String getAppRate() {
+        return appRate;
+    }
+
+    public void setAppRate(String appRate) {
+        this.appRate = appRate;
+    }
 
     public String getAppId() {
         return appId;

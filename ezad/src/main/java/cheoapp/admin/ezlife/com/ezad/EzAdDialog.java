@@ -3,7 +3,6 @@ package cheoapp.admin.ezlife.com.ezad;
 
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -13,10 +12,9 @@ import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SnapHelper;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -35,7 +33,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-public class EzAdDialog {
+public abstract class EzAdDialog {
 
     static String JSON_URL = "https://wgames.ezlifetech.com/EZAds/EZAds.json";
 
@@ -47,16 +45,15 @@ public class EzAdDialog {
 
     private AppEz appEz;
 
-    private DialogInterface.OnCancelListener onCancelListener;
-
     private Dialog dialog;
 
     private int margin;
 
-    public EzAdDialog(Context context,DialogInterface.OnCancelListener onCancelListener){
+    public EzAdDialog(Context context){
         this.context = context;
-        this.onCancelListener = onCancelListener;
     }
+
+    public abstract void onCancel();
 
 
     public void showDialog(){
@@ -69,28 +66,34 @@ public class EzAdDialog {
         SharedPreferences preferences =  PreferenceManager.getDefaultSharedPreferences(context);
         String json = preferences.getString(KEY_JSON_EZ_AD,"");
         if(json.length()<1){
-            onCancelListener.onCancel(dialog);
+            onCancel();
         }else {
             appEz = getAppShow(json);
             if(appEz==null){
-                onCancelListener.onCancel(dialog);
+                onCancel();
+            }else {
+                setupValue();
+                dialog.show();
             }
-            setupValue();
+
         }
 
-        dialog.show();
 
     }
 
     private void setupValue() {
+        TextView tvRate = dialog.findViewById(R.id.tvRate);
+        TextView tvReview = dialog.findViewById(R.id.tvReview);
         TextView tvName = dialog.findViewById(R.id.tvName);
         TextView tvDes = dialog.findViewById(R.id.tvDes);
         ImageView imgIcon = dialog.findViewById(R.id.imgIcon);
         View btnCancel = dialog.findViewById(R.id.btnCancel);
-        View btnInstall = dialog.findViewById(R.id.btnInstall);
+        final View btnInstall = dialog.findViewById(R.id.btnInstall);
         RecyclerView rcv = dialog.findViewById(R.id.rcv);
         ImageView imgBanner = dialog.findViewById(R.id.imgBanner);
 
+        tvRate.setText(appEz.getAppRate());
+        tvReview.setText("• "+appEz.getAppReview()+" Review");
         tvName.setText(appEz.getAppName());
         tvDes.setText(appEz.getAppDesc());
         Glide.with(context).load(appEz.getAppIcon()).into(imgIcon);
@@ -98,14 +101,39 @@ public class EzAdDialog {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onCancelListener.onCancel(dialog);
+                onCancel();
             }
         });
         btnInstall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                onCancelListener.onCancel(dialog);
+                onCancel();
                 goToStore(appEz.getAppId());
+            }
+        });
+
+        dialog.findViewById(R.id.viewBanner).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                btnInstall.performClick();
+            }
+        });
+        dialog.findViewById(R.id.tvDes).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                btnInstall.performClick();
+            }
+        });
+        dialog.findViewById(R.id.tvName).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                btnInstall.performClick();
+            }
+        });
+        dialog.findViewById(R.id.imgIcon).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                btnInstall.performClick();
             }
         });
 
@@ -131,10 +159,16 @@ public class EzAdDialog {
             @Override
             public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
                 ImageView view = new ImageView(context);
+                view.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        goToStore(appEz.getAppId());
+                    }
+                });
                 LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                 if(appEz.getAppDir().equals("p")){
-                    params.height = context.getResources().getDisplayMetrics().heightPixels/2;
-                    params.width = context.getResources().getDisplayMetrics().widthPixels/2;
+                    params.height = (int) (context.getResources().getDisplayMetrics().heightPixels/2.7);
+                    params.width = (int) (context.getResources().getDisplayMetrics().widthPixels/2.7);
                 }else {
                     params.height = (int) (context.getResources().getDisplayMetrics().widthPixels/2.2);
                     params.width = (int) (context.getResources().getDisplayMetrics().heightPixels/2.2);
@@ -193,6 +227,8 @@ public class EzAdDialog {
                 String appName = jsonObject.getString("appName");
                 String appDesc = jsonObject.getString("appDesc");
                 String appDirection = jsonObject.getString("appDirection");
+                String appRate =  jsonObject.getString("appRate");
+                String appReview =  jsonObject.getString("AppReview");
 
                 JSONArray arrJson = jsonObject.getJSONArray("appScreen");
                 String[] appScreen = new String[arrJson.length()];
@@ -209,20 +245,21 @@ public class EzAdDialog {
                 appEz.setAppDir(appDirection);
                 appEz.setAppScreen(appScreen);
                 appEz.setAppRank(appRank);
+                appEz.setAppRate(appRate);
+                appEz.setAppReview(appReview);
 
                 if(context.getPackageName().equals(appEz.getAppId())){
                     tagThisApp = Arrays.asList(appEz.getAppTag());
                 } else if(!isAppInstalled(appEz.getAppId())){
                         appEzs.add(appEz);
-                    }
-
+                }
 
             }
 
 
         } catch (JSONException e) {
             e.printStackTrace();
-            onCancelListener.onCancel(dialog);
+            onCancel();
         }
 
         //remove tag equals
@@ -236,6 +273,11 @@ public class EzAdDialog {
                 }
             }
         }
+
+        if(appEzs.size()==0){
+            return null;
+        }
+
 
 
         //get model
