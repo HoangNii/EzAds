@@ -6,7 +6,7 @@
 	    implementation 'com.github.duchoangitt:CheoApp:1.0.3'  //add build.gradle app
 
 
-- In Splash
+- In Splash Screen
 
 	    EzAdDialog.loadJson(this);
 
