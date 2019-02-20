@@ -1,6 +1,5 @@
 package cheoapp.admin.ezlife.com.ezad;
 
-
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,12 +7,17 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
+import android.text.SpannableString;
+import android.text.style.URLSpan;
+import android.text.style.UnderlineSpan;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,13 +25,13 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -66,8 +70,11 @@ public abstract class EzAdDialog {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_ezad);
         dialog.setCancelable(false);
-        if(dialog.getWindow()!=null)
+        if(dialog.getWindow()!=null){
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
             dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+
 
 
         SharedPreferences preferences =  PreferenceManager.getDefaultSharedPreferences(context);
@@ -95,18 +102,29 @@ public abstract class EzAdDialog {
         TextView tvReview = dialog.findViewById(R.id.tvReview);
         TextView tvName = dialog.findViewById(R.id.tvName);
         TextView tvDes = dialog.findViewById(R.id.tvDes);
+        TextView tvCancel = dialog.findViewById(R.id.tvCancel);
         ImageView imgIcon = dialog.findViewById(R.id.imgIcon);
-        View btnCancel = dialog.findViewById(R.id.btnCancel);
+        final View btnCancel = dialog.findViewById(R.id.btnCancel);
         final View btnInstall = dialog.findViewById(R.id.btnInstall);
         RecyclerView rcv = dialog.findViewById(R.id.rcv);
         ImageView imgBanner = dialog.findViewById(R.id.imgBanner);
+
 
         tvRate.setText(appEz.getAppRate());
         tvReview.setText("• "+appEz.getAppReview()+" Review");
         tvName.setText(appEz.getAppName());
         tvDes.setText(appEz.getAppDesc());
         Glide.with(context).load(appEz.getAppIcon()).into(imgIcon);
+        SpannableString tv = new SpannableString("No, Exit");
+        tv.setSpan(new UnderlineSpan(),0,8,0);
+        tvCancel.setText(tv);
 
+        tvCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onAction(Action.CANCEL_CLICK,appEz!=null?appEz.getAppId():"no app");
+            }
+        });
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
