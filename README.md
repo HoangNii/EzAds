@@ -3,7 +3,7 @@
 
 	    maven { url 'https://jitpack.io' }    // add build.gradle project
 
-	    implementation 'com.github.duchoangitt:EzAds:1.0.5'  //add build.gradle app
+	    implementation 'com.github.duchoangitt:EzAds:1.0.3'  //add build.gradle app
 
 
 - In Splash Screen
