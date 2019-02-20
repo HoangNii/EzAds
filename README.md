@@ -16,6 +16,7 @@
  		 new EzAdDialog(this) {
             @Override
             public void onAction(Action action, String apId) {
+	    	 sendTrackerEvent(action.toString(),apId)
                 if(action!=Action.SHOW)finish();
             }
  		 }.showDialog();
